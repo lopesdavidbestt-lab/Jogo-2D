@@ -4,38 +4,44 @@ const scoreEl = document.getElementById('score');
 
 let isPulando = false;
 let score = 0;
+let playing = true;
+let speed = 7; // Aumente para dificuldade
 
-// Pular
+// Jump
 function pular() {
-  if (isPulando) return;
+  if (isPulando || !playing) return;
   isPulando = true;
-  let jumpHeight = parseInt(macaco.style.bottom) || 0;
+  let jumpHeight = parseInt(macaco.style.bottom) || 20;
   const maxJump = 100;
+  const gravity = 5;
 
   const upInterval = setInterval(() => {
+    if (!playing) { clearInterval(upInterval); return; }
     if (jumpHeight >= maxJump) {
       clearInterval(upInterval);
       const downInterval = setInterval(() => {
-        if (jumpHeight <= 0) {
-          jumpHeight = 0;
+        if (!playing) { clearInterval(downInterval); return; }
+        if (jumpHeight <= 20) {
+          jumpHeight = 20;
           macaco.style.bottom = jumpHeight + 'px';
           clearInterval(downInterval);
           isPulando = false;
-          return;
+        } else {
+          jumpHeight -= gravity;
+          macaco.style.bottom = jumpHeight + 'px';
         }
-        jumpHeight -= 5;
-        if (jumpHeight < 0) jumpHeight = 0;
-        macaco.style.bottom = jumpHeight + 'px';
-      }, 20);
+      }, 16);
     } else {
-      jumpHeight += 5;
+      jumpHeight += gravity;
       macaco.style.bottom = jumpHeight + 'px';
     }
-  }, 20);
+    macaco.style.bottom = jumpHeight + 'px';
+  }, 16);
 }
 
-// Obstáculos
+// Obstacles
 function criarObstaculo() {
+  if (!playing) return;
   const obstaculo = document.createElement('div');
   obstaculo.classList.add('obstaculo');
   game.appendChild(obstaculo);
@@ -44,35 +50,49 @@ function criarObstaculo() {
   obstaculo.style.left = obstaculoLeft + 'px';
 
   const moveInterval = setInterval(() => {
-    if (obstaculoLeft < -20) {
+    if (!playing) {
+      if (obstaculo.parentNode) game.removeChild(obstaculo);
       clearInterval(moveInterval);
-      game.removeChild(obstaculo);
-      score++;
-      scoreEl.textContent = 'Pontuação: ' + score;
       return;
     }
-    obstaculoLeft -= 5;
+    if (obstaculoLeft < -20) {
+      clearInterval(moveInterval);
+      if (obstaculo.parentNode) game.removeChild(obstaculo);
+    }
+    obstaculoLeft -= speed;
     obstaculo.style.left = obstaculoLeft + 'px';
 
-    // Colisão
-    const macacoBottom = parseInt(macaco.style.bottom) || 0;
+    // Collision
+    const macacoBottom = parseInt(macaco.style.bottom) || 20;
     if (
-      obstaculoLeft > 50 &&
-      obstaculoLeft < 90 &&
-      macacoBottom < 40
+      obstaculoLeft > 70 && obstaculoLeft < 116 && macacoBottom < 54
     ) {
-      alert('Game Over! Pontuação: ' + score);
-      window.location.reload();
+      playing = false;
+      scoreEl.textContent = "GAME OVER";
+      setTimeout(() => { window.location.reload() }, 1600);
     }
-  }, 20);
+  }, 16);
 
-  setTimeout(criarObstaculo, Math.random() * 2000 + 1000);
+  // Novo obstáculo aleatoriamente entre 700ms e 1500ms
+  setTimeout(criarObstaculo, Math.random() * 800 + 700);
 }
 
-// Controles
+// Score loop “dino style”
+function scoreLoop() {
+  if (!playing) return;
+  score += 1;
+  scoreEl.textContent = String(score).padStart(5, '0');
+  setTimeout(scoreLoop, 60);
+}
+
 document.addEventListener('keydown', e => {
-  if (e.code === 'Space' || e.key === ' ') pular();
+  if ((e.code === 'Space' || e.key === ' ') && playing) pular();
+  if ((e.code === 'ArrowUp' || e.key === 'ArrowUp') && playing) pular();
 });
 
-// Iniciar
+// Start position do macaco
+macaco.style.bottom = '20px';
+
+criarObstaculo();
+scoreLoop();
 criarObstaculo();
