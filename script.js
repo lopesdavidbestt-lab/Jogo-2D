@@ -5,13 +5,13 @@ const scoreEl = document.getElementById('score');
 let isPulando = false;
 let score = 0;
 let playing = true;
-let speed = 7; // Aumente para dificuldade
+let speed = 7;
 
 // Jump
 function pular() {
   if (isPulando || !playing) return;
   isPulando = true;
-  let jumpHeight = parseInt(macaco.style.bottom) || 20;
+  let jumpHeight = parseInt(macaco.style.bottom) || 23;
   const maxJump = 100;
   const gravity = 5;
 
@@ -21,8 +21,8 @@ function pular() {
       clearInterval(upInterval);
       const downInterval = setInterval(() => {
         if (!playing) { clearInterval(downInterval); return; }
-        if (jumpHeight <= 20) {
-          jumpHeight = 20;
+        if (jumpHeight <= 23) {
+          jumpHeight = 23;
           macaco.style.bottom = jumpHeight + 'px';
           clearInterval(downInterval);
           isPulando = false;
@@ -63,9 +63,9 @@ function criarObstaculo() {
     obstaculo.style.left = obstaculoLeft + 'px';
 
     // Collision
-    const macacoBottom = parseInt(macaco.style.bottom) || 20;
+    const macacoBottom = parseInt(macaco.style.bottom) || 23;
     if (
-      obstaculoLeft > 70 && obstaculoLeft < 116 && macacoBottom < 54
+      obstaculoLeft > 70 && obstaculoLeft < 114 && macacoBottom < 50
     ) {
       playing = false;
       scoreEl.textContent = "GAME OVER";
@@ -73,11 +73,10 @@ function criarObstaculo() {
     }
   }, 16);
 
-  // Novo obstáculo aleatoriamente entre 700ms e 1500ms
   setTimeout(criarObstaculo, Math.random() * 800 + 700);
 }
 
-// Score loop “dino style”
+// Score loop estilo dino
 function scoreLoop() {
   if (!playing) return;
   score += 1;
@@ -90,9 +89,7 @@ document.addEventListener('keydown', e => {
   if ((e.code === 'ArrowUp' || e.key === 'ArrowUp') && playing) pular();
 });
 
-// Start position do macaco
-macaco.style.bottom = '20px';
+macaco.style.bottom = '23px';
 
 criarObstaculo();
 scoreLoop();
-criarObstaculo();
